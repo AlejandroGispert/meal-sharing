@@ -21,7 +21,7 @@ app.get("/future-meals", async (req, res) => {
   //   const meals = await knex.raw("SELECT * FROM Meal");
   // console.log(meals);
   const futureMeals = await knex.raw(
-    `SELECT * FROM Meal WHERE created_date >= NOW() ORDER BY created_date DESC`
+    "SELECT * FROM Meal WHERE created_date >= NOW() ORDER BY created_date DESC"
   );
   if (futureMeals.length > 0) {
     res.send(futureMeals);
@@ -29,9 +29,10 @@ app.get("/future-meals", async (req, res) => {
     res.send([]);
   }
 });
+
 app.get("/past-meals", async (req, res) => {
   const pastMeals = await knex.raw(
-    `SELECT * FROM Meal WHERE created_date <= NOW() ORDER BY created_date DESC`
+    "SELECT * FROM Meal WHERE created_date <= NOW() ORDER BY created_date DESC"
   );
   if (pastMeals.length > 0) {
     res.send(pastMeals);
@@ -48,6 +49,7 @@ app.get("/all-meals", async (req, res) => {
     res.send([]);
   }
 });
+
 app.get("/first-meal", async (req, res) => {
   const firstMeal = await knex.raw(
     "SELECT * FROM Meal ORDER BY ID ASC LIMIT 1"
@@ -58,6 +60,7 @@ app.get("/first-meal", async (req, res) => {
     res.status(404).send("No meals found");
   }
 });
+
 app.get("/last-meal", async (req, res) => {
   const lastMeal = await knex.raw(
     "SELECT * FROM Meal ORDER BY ID DESC LIMIT 1"
@@ -68,20 +71,7 @@ app.get("/last-meal", async (req, res) => {
     res.status(404).send("No meals found");
   }
 });
+
 app.listen(process.env.PORT, () => {
   console.log(`API listening on port ${process.env.PORT}`);
 });
-
-// this comments are for myself
-
-// You can delete this route once you add your own routes
-// apiRouter.get("/", async (req, res) => {
-//   const SHOW_TABLES_QUERY =
-//     process.env.DB_CLIENT === "pg"
-//       ? "SELECT * FROM pg_catalog.pg_tables;"
-//       : "SHOW TABLES;";
-//   const tables = await knex.raw(SHOW_TABLES_QUERY);
-//   res.json({ tables });
-// });
-
-// console.log(Date(Date.now()));
