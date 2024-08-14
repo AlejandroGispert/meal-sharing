@@ -56,4 +56,40 @@ reservationsRouter.get("/:id", async (req, res) => {
   }
 });
 
+reservationsRouter.put("/:id", async (req, res) => {
+  const id = req.params.id;
+  const {
+    contact_email,
+    contact_name,
+    contact_phonenumber,
+    meal_id,
+    number_of_guests,
+  } = req.query;
+
+  await knex("Reservation").where({ id: id }).update({
+    contact_email,
+    contact_name,
+    contact_phonenumber,
+    meal_id,
+    number_of_guests,
+  });
+
+  res.send("The database has been updated");
+});
+
+reservationsRouter.delete("/:id", async (req, res) => {
+  const id = req.params.id;
+
+  const fetchedItem = await knex
+    .select("*")
+    .from("Reservation")
+    .where("id", id);
+
+  if (fetchedItem.length > 0) {
+    res.send(fetchedItem);
+  } else {
+    res.send("No data found in that reservation ID");
+  }
+});
+
 export default reservationsRouter;

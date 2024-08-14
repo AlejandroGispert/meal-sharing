@@ -45,4 +45,20 @@ mealsRouter.get("/:id", async (req, res) => {
     res.send("No data found in that meal ID");
   }
 });
+
+mealsRouter.put("/:id", async (req, res) => {
+  const id = req.params.id;
+  const { title, description, location, max_reservations, price } = req.query;
+
+  await knex("Meal").where({ id: id }).update({
+    title,
+    description,
+    location,
+    max_reservations,
+    price,
+    created_date: new Date(),
+  });
+
+  res.send("The database has been updated");
+});
 export default mealsRouter;
