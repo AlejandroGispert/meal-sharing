@@ -33,4 +33,16 @@ mealsRouter.post("/", async (req, res) => {
     res.status(500).send("Error creating reservation.");
   }
 });
+
+mealsRouter.get("/:id", async (req, res) => {
+  const id = req.params.id;
+
+  const fetchedItem = await knex.select("*").from("Meal").where("id", id);
+
+  if (fetchedItem.length > 0) {
+    res.send(fetchedItem);
+  } else {
+    res.send("No data found in that meal ID");
+  }
+});
 export default mealsRouter;

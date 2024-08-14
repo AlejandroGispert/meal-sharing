@@ -40,4 +40,20 @@ reservationsRouter.post("/", async (req, res) => {
     res.status(500).send("Error creating reservation.");
   }
 });
+
+reservationsRouter.get("/:id", async (req, res) => {
+  const id = req.params.id;
+
+  const fetchedItem = await knex
+    .select("*")
+    .from("Reservation")
+    .where("id", id);
+
+  if (fetchedItem.length > 0) {
+    res.send(fetchedItem);
+  } else {
+    res.send("No data found in that reservation ID");
+  }
+});
+
 export default reservationsRouter;
