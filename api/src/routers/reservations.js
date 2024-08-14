@@ -80,16 +80,9 @@ reservationsRouter.put("/:id", async (req, res) => {
 reservationsRouter.delete("/:id", async (req, res) => {
   const id = req.params.id;
 
-  const fetchedItem = await knex
-    .select("*")
-    .from("Reservation")
-    .where("id", id);
+  await knex("Reservation").where("id", id).del();
 
-  if (fetchedItem.length > 0) {
-    res.send(fetchedItem);
-  } else {
-    res.send("No data found in that reservation ID");
-  }
+  res.send("the item has been deleted");
 });
 
 export default reservationsRouter;

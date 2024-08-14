@@ -61,4 +61,12 @@ mealsRouter.put("/:id", async (req, res) => {
 
   res.send("The database has been updated");
 });
+
+mealsRouter.delete("/:id", async (req, res) => {
+  const id = req.params.id;
+
+  await knex("Meal").where("id", id).del();
+
+  res.send("the item has been deleted");
+});
 export default mealsRouter;
