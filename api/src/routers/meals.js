@@ -15,23 +15,22 @@ mealsRouter.get("/", async (req, res) => {
 });
 
 mealsRouter.post("/", async (req, res) => {
-  const title = req.params.title;
-  const description = req.params.description;
-  const location = req.params.location;
-  const maxReservations = req.params.max_reservations;
-  const price = req.params.price;
-
-  await knex.transaction(async (trx) => {
-    await trx("Meal").insert({
-      title: title,
-      description: description,
-      location: location,
-      max_reservations: maxReservations,
-      price: price,
-      created_date: new Date(),
+  const { title, description, location, max_reservations, price } = req.query;
+  try {
+    await knex.transaction(async (trx) => {
+      await trx("Meal").insert({
+        title,
+        description,
+        location,
+        max_reservations,
+        price,
+        created_date: new Date(),
+      });
     });
-  });
-  res.send("new meal added");
+    res.status(201).send("New Meal created successfully.");
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error creating reservation.");
+  }
 });
-
 export default mealsRouter;
