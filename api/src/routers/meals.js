@@ -7,7 +7,16 @@ const mealsRouter = express.Router();
 mealsRouter.get("/", async (req, res) => {
   const allMeals = await knex.select("*").from("Meal").orderBy("ID", "ASC");
 
-  if (allMeals.length > 0) {
+  const maxPrice = req.query.maxPrice;
+
+  if (maxPrice) {
+    const maxPriceMeals = await knex
+      .select("*")
+      .from("Meal")
+      .where("price", "<", maxPrice);
+
+    res.send(maxPriceMeals);
+  } else if (allMeals.length > 0) {
     res.send(allMeals);
   } else {
     res.send([]);
