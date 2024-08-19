@@ -1,0 +1,81 @@
+import express from "express";
+import knex from "../database_client.js";
+
+// This router can be deleted once you add your own router
+const mealsRouter = express.Router();
+
+mealsRouter.get("/", async (req, res) => {
+  const allMeals = await knex.select("*").from("Meal").orderBy("ID", "ASC");
+
+  const maxPrice = req.query.maxPrice;
+
+  if (maxPrice) {
+    const maxPriceMeals = await knex
+      .select("*")
+      .from("Meal")
+      .where("price", "<", maxPrice);
+
+    res.send(maxPriceMeals);
+  } else if (allMeals.length > 0) {
+    res.send(allMeals);
+  } else {
+    res.send([]);
+  }
+});
+
+mealsRouter.post("/", async (req, res) => {
+  const { title, description, location, max_reservations, price } = req.query;
+  try {
+    await knex.transaction(async (trx) => {
+      await trx("Meal").insert({
+        title,
+        description,
+        location,
+        max_reservations,
+        price,
+        created_date: new Date(),
+      });
+    });
+    res.status(201).send("New Meal created successfully.");
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error creating reservation.");
+  }
+});
+
+mealsRouter.get("/:id", async (req, res) => {
+  const id = req.params.id;
+
+  const fetchedItem = await knex.select("*").from("Meal").where("id", id);
+
+  if (fetchedItem.length > 0) {
+    res.send(fetchedItem);
+  } else {
+    res.send("No data found in that meal ID");
+  }
+});
+
+mealsRouter.put("/:id", async (req, res) => {
+  const id = req.params.id;
+  const { title, description, location, max_reservations, price } = req.query;
+
+  await knex("Meal").where({ id: id }).update({
+    title,
+    description,
+    location,
+    max_reservations,
+    price,
+    created_date: new Date(),
+  });
+
+  res.send("The database has been updated");
+});
+
+mealsRouter.delete("/:id", async (req, res) => {
+  const id = req.params.id;
+
+  await knex("Meal").where("id", id).del();
+
+  res.send("the item has been deleted");
+});
+export default mealsRouter;
