@@ -46,47 +46,65 @@ mealsRouter.get("/", async (req, res) => {
   }
 
   if (titleApi) {
-    const titleMeals = await knex("Meal").where(
-      "title",
-      "LIKE",
-      `%${titleApi}%`
-    );
+    const titleMeals = await knex
+      .select("*")
+      .from("Meal")
+      .where("title", "LIKE", `%${titleApi}%`);
 
-    res.send(titleMeals);
+    return res.send(titleMeals);
   }
   if (dateAfterApi) {
-    const dateAfterMeals = await knex("Meal").where(
-      "created_date",
-      ">",
-      dateAfterApi
-    );
+    const dateAfterMeals = await knex
+      .select("*")
+      .from("Meal")
+      .where("created_date", ">", dateAfterApi);
 
-    res.send(dateAfterMeals);
+    return res.send(dateAfterMeals);
   }
   if (dateBeforeApi) {
-    const dateBeforeMeals = await knex("Meal").where(
-      "created_date",
-      ">",
-      dateBeforeApi
-    );
+    const dateBeforeMeals = await knex
+      .select("*")
+      .from("Meal")
+      .where("created_date", "<", dateBeforeApi);
 
-    res.send(dateBeforeMeals);
+    return res.send(dateBeforeMeals);
   }
 
-  if (limitApi) {
-    const limitedMeals = await knex("Meal").limit(parseInt(limitApi));
-
-    res.send(limitedMeals);
-  }
   if (sortKeyApi) {
     if (sortDirApi) {
-      const sortedMeals = await knex("Meal").orderBy(sortKeyApi, sortDirApi);
+      const sortedMeals = await knex
+        .select("*")
+        .from("Meal")
+        .orderBy(sortKeyApi, sortDirApi);
 
-      res.send(sortedMeals);
+      return res.send(sortedMeals);
     } else {
-      const sortedMeals = await knex("Meal").orderBy(sortKeyApi, "ASC");
+      const sortedMeals = await knex
+        .select("*")
+        .from("Meal")
+        .orderBy(sortKeyApi, "ASC");
 
-      res.send(sortedMeals);
+      return res.send(sortedMeals);
+    }
+  }
+
+  if (
+    !availableReservationsApi ||
+    !titleApi ||
+    !dateAfterApi ||
+    !dateBeforeApi ||
+    !limitApi ||
+    !sortKeyApi
+  ) {
+    if (limitApi) {
+      const limitedMeals = await knex("Meal")
+        .select("*")
+        .orderBy("ID", "ASC")
+        .limit(parseInt(limitApi));
+
+      res.send(limitedMeals);
+    } else {
+      res.send(allMeals);
     }
   }
 });
