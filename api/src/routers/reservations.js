@@ -25,15 +25,14 @@ reservationsRouter.post("/", async (req, res) => {
     number_of_guests,
   } = req.query;
   try {
-    await knex.transaction(async (trx) => {
-      await trx("Reservation").insert({
-        contact_email,
-        contact_name,
-        contact_phonenumber,
-        meal_id,
-        number_of_guests,
-      });
+    await knex("Reservation").insert({
+      contact_email,
+      contact_name,
+      contact_phonenumber,
+      meal_id,
+      number_of_guests,
     });
+
     res.status(201).send("Reservation created successfully.");
   } catch (error) {
     console.error(error);

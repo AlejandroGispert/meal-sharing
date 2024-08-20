@@ -112,16 +112,15 @@ mealsRouter.get("/", async (req, res) => {
 mealsRouter.post("/", async (req, res) => {
   const { title, description, location, max_reservations, price } = req.query;
   try {
-    await knex.transaction(async (trx) => {
-      await trx("Meal").insert({
-        title,
-        description,
-        location,
-        max_reservations,
-        price,
-        created_date: new Date(),
-      });
+    await knex("Meal").insert({
+      title,
+      description,
+      location,
+      max_reservations,
+      price,
+      created_date: new Date(),
     });
+
     res.status(201).send("New Meal created successfully.");
   } catch (error) {
     console.error(error);
@@ -164,4 +163,20 @@ mealsRouter.delete("/:id", async (req, res) => {
 
   res.send("the item has been deleted");
 });
+
+mealsRouter.get("/:meal_id/reviews", async (req, res) => {
+  const mealId = req.params.meal_id;
+
+  const fetchedItem = await knex
+    .select("*")
+    .from("Review")
+    .where("meal_id", mealId);
+
+  if (fetchedItem.length > 0) {
+    res.send(fetchedItem);
+  } else {
+    res.send("No data found in that meal ID");
+  }
+});
+
 export default mealsRouter;
