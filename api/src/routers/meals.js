@@ -7,20 +7,51 @@ const mealsRouter = express.Router();
 mealsRouter.get("/", async (req, res) => {
   const allMeals = await knex.select("*").from("Meal").orderBy("ID", "ASC");
 
-  const maxPrice = req.query.maxPrice;
+  const maxPriceApi = req.query.maxPrice;
+  const idApi = req.query.id;
+  const titleApi = req.query.title;
+  const dateAfterApi = req.query.dateAfter;
+  const dateBeforeApi = req.query.dateBefore;
+  const limitApi = req.query.limit;
+  const sortKeyApi = req.query.sortKey;
+  const sortDirApi = req.query.sortDir;
 
-  if (maxPrice) {
+  if (maxPriceApi) {
     const maxPriceMeals = await knex
       .select("*")
       .from("Meal")
-      .where("price", "<", maxPrice);
+      .where("price", "<", maxPriceApi);
 
     res.send(maxPriceMeals);
-  } else if (allMeals.length > 0) {
-    res.send(allMeals);
-  } else {
-    res.send([]);
   }
+  if (idApi) {
+    const availableReservationsMeals = await knex("Meal")
+      .join("Reservation", "Meal.id", "=", "Reservation.meal_id")
+      .select(
+        "Meal.id",
+        "Meal.max_reservations",
+        "Reservation.number_of_guests"
+      );
+    if (availableReservationsMeals) {
+      for (let i = 0; i < availableReservationsMeals.length; i++) {
+        if (availableReservationsMeals[i].id == idApi) {
+          let reservationsAvailable =
+            availableReservationsMeals[i].max_reservations -
+            availableReservationsMeals[i].number_of_guests;
+
+          console.log(reservationsAvailable);
+          res.send({ reservationsAvailable });
+        }
+      }
+    } else {
+      res.sendStatus("404 Not Available");
+    }
+  }
+  // else if (allMeals.length > 0) {
+  //   res.send(allMeals);
+  // } else {
+  //   res.send([]);
+  // }
 });
 
 mealsRouter.post("/", async (req, res) => {
