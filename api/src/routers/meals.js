@@ -44,6 +44,51 @@ mealsRouter.get("/", async (req, res) => {
       }
     }
   }
+
+  if (titleApi) {
+    const titleMeals = await knex("Meal").where(
+      "title",
+      "LIKE",
+      `%${titleApi}%`
+    );
+
+    res.send(titleMeals);
+  }
+  if (dateAfterApi) {
+    const dateAfterMeals = await knex("Meal").where(
+      "created_date",
+      ">",
+      dateAfterApi
+    );
+
+    res.send(dateAfterMeals);
+  }
+  if (dateBeforeApi) {
+    const dateBeforeMeals = await knex("Meal").where(
+      "created_date",
+      ">",
+      dateBeforeApi
+    );
+
+    res.send(dateBeforeMeals);
+  }
+
+  if (limitApi) {
+    const limitedMeals = await knex("Meal").limit(parseInt(limitApi));
+
+    res.send(limitedMeals);
+  }
+  if (sortKeyApi) {
+    if (sortDirApi) {
+      const sortedMeals = await knex("Meal").orderBy(sortKeyApi, sortDirApi);
+
+      res.send(sortedMeals);
+    } else {
+      const sortedMeals = await knex("Meal").orderBy(sortKeyApi, "ASC");
+
+      res.send(sortedMeals);
+    }
+  }
 });
 
 mealsRouter.post("/", async (req, res) => {
