@@ -179,4 +179,34 @@ mealsRouter.get("/:meal_id/reviews", async (req, res) => {
   }
 });
 
+mealsRouter.put("/:meal_id/reviews", async (req, res) => {
+  const mealId = req.params.meal_id;
+
+  const fetchedItem = await knex
+    .select("*")
+    .from("Review")
+    .where("meal_id", mealId);
+
+  if (fetchedItem.length > 0) {
+    res.send(fetchedItem);
+  } else {
+    res.send("No data found in that meal ID");
+  }
+});
+
+mealsRouter.delete("/:meal_id/reviews", async (req, res) => {
+  const mealId = req.params.meal_id;
+
+  const fetchedItem = await knex
+    .select("*")
+    .from("Review")
+    .where("meal_id", mealId);
+
+  if (fetchedItem.length > 0) {
+    res.send(fetchedItem);
+  } else {
+    res.send("No data found in that meal ID");
+  }
+});
+
 export default mealsRouter;

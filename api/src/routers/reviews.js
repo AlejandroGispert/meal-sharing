@@ -13,17 +13,6 @@ reviewsRouter.get("/", async (req, res) => {
   }
 });
 
-reviewsRouter.get("/:id", async (req, res) => {
-  const id = req.params.id;
-  const fetchedReview = await knex.select("*").from("Review").where("id", id);
-
-  if (fetchedReview) {
-    res.send(fetchedReview);
-  } else {
-    res.sendStatus("401");
-  }
-});
-
 reviewsRouter.post("/", async (req, res) => {
   // ('Buenisimo', 'Italiano perfecctisima la mama del la comida', 1,5),('thunder', 'the food was stormy', 2,3)
   const { description, meal_id, stars, title } = req.query;
@@ -51,6 +40,27 @@ reviewsRouter.get("/:id", async (req, res) => {
   } else {
     res.sendStatus("401");
   }
+});
+
+reviewsRouter.put("/:id", async (req, res) => {
+  const id = req.params.id;
+  const { description, meal_id, stars, title } = req.query;
+
+  await knex("Review").where({ id: id }).update({
+    description,
+    meal_id,
+    stars,
+    title,
+  });
+  res.send("The review database has been updated");
+});
+
+reviewsRouter.delete("/:id", async (req, res) => {
+  const id = req.params.id;
+
+  await knex("Review").where("id", id).del();
+
+  res.send("the review has been deleted");
 });
 
 export default reviewsRouter;
