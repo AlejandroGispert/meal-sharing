@@ -20,7 +20,7 @@ apiRouter.use("/meals", mealsRouter);
 apiRouter.use("/reservations", reservationsRouter);
 apiRouter.use("/reviews", reviewsRouter);
 
-app.use("/api", apiRouter);
+app.use("/", apiRouter);
 
 app.get("/future-meals", async (req, res) => {
   //   const meals = await knex.raw("SELECT * FROM Meal");
