@@ -5,117 +5,81 @@ import knex from "../database_client.js";
 const mealsRouter = express.Router();
 
 mealsRouter.get("/", async (req, res) => {
-  const allMeals = await knex.select("*").from("Meal").orderBy("ID", "ASC");
+  try {
+    let query = knex.select("*").from("Meal");
 
-  const maxPriceApi = parseFloat(req.query.maxPrice);
+    const maxPriceApi = parseFloat(req.query.maxPrice);
+    const availableReservationsApi = req.query.availableReservations === "true";
+    const titleApi = req.query.title?.trim();
+    const dateAfterApi = req.query.dateAfter;
+    const dateBeforeApi = req.query.dateBefore;
+    const limitApi = parseInt(req.query.limit, 10);
+    const sortKeyApi = req.query.sortKey;
+    const sortDirApi =
+      req.query.sortDir?.toLowerCase() === "desc" ? "desc" : "asc";
 
-  const availableReservationsApi = req.query.availableReservations;
-  const titleApi = req.query.title?.trim();
-  const dateAfterApi = req.query.dateAfter;
-  const dateBeforeApi = req.query.dateBefore;
-  const limitApi = parseInt(req.query.limit, 100);
-  const sortKeyApi = req.query.sortKey;
-  const sortDirApi = req.query.sortDir?.toLowerCase();
+    const validSortKeys = [
+      "title",
+      "when",
+      "max_reservations",
+      "price",
+      "created_date",
+    ];
 
-  if (maxPriceApi) {
-    const maxPriceMeals = await knex
-      .select("*")
-      .from("Meal")
-      .where("price", "<", maxPriceApi);
+    // Apply filters based on query parameters
+    if (!isNaN(maxPriceApi)) {
+      query = query.where("price", "<", maxPriceApi);
+    }
 
-    return res.send(maxPriceMeals);
-  }
+    if (titleApi) {
+      query = query.where("title", "LIKE", `%${titleApi}%`);
+    }
 
-  if (availableReservationsApi) {
-    const availableReservationsMeals = await knex("Meal")
-      .join("Reservation", "Meal.id", "=", "Reservation.meal_id")
-      .select("Meal.max_reservations", "Reservation.number_of_guests");
+    if (dateAfterApi) {
+      query = query.where("created_date", ">", dateAfterApi);
+    }
 
-    for (const meal of availableReservationsMeals) {
-      const reservationsAvailable =
-        meal.max_reservations - meal.number_of_guests;
+    if (dateBeforeApi) {
+      query = query.where("created_date", "<", dateBeforeApi);
+    }
 
-      if (reservationsAvailable > 0 && availableReservationsApi === "true") {
-        console.log(meal);
-        return res.send(meal);
+    if (validSortKeys.includes(sortKeyApi)) {
+      query = query.orderBy(sortKeyApi, sortDirApi);
+    }
+
+    if (!isNaN(limitApi)) {
+      query = query.limit(limitApi);
+    }
+
+    if (availableReservationsApi) {
+      const availableReservationsMeals = await knex("Meal")
+        .join("Reservation", "Meal.id", "=", "Reservation.meal_id")
+        .select("Meal.max_reservations", "Reservation.number_of_guests");
+
+      for (const meal of availableReservationsMeals) {
+        const reservationsAvailable =
+          meal.max_reservations - meal.number_of_guests;
+
+        if (reservationsAvailable > 0 && availableReservationsApi === "true") {
+          console.log(meal);
+          res.send(meal);
+        }
+        if (
+          reservationsAvailable === 0 &&
+          availableReservationsApi === "false"
+        ) {
+          console.log(meal);
+          res.send(meal);
+        }
       }
-      if (reservationsAvailable === 0 && availableReservationsApi === "false") {
-        console.log(meal);
-        return res.send(meal);
-      }
     }
-  }
 
-  if (titleApi) {
-    const titleMeals = await knex
-      .select("*")
-      .from("Meal")
-      .where("title", "LIKE", `%${titleApi}%`);
-
-    return res.send(titleMeals);
-  }
-
-  if (dateAfterApi) {
-    const dateAfterMeals = await knex
-      .select("*")
-      .from("Meal")
-      .where("created_date", ">", dateAfterApi);
-
-    return res.send(dateAfterMeals);
-  }
-
-  if (dateBeforeApi) {
-    const dateBeforeMeals = await knex
-      .select("*")
-      .from("Meal")
-      .where("created_date", "<", dateBeforeApi);
-
-    return res.send(dateBeforeMeals);
-  }
-  console.log(allMeals);
-  const validSortKeys = [
-    "title",
-    "when",
-    "max_reservations",
-    "price",
-    "created_date",
-  ];
-  if (sortKeyApi && validSortKeys.includes(sortKeyApi)) {
-    if (sortDirApi) {
-      const sortedMeals = await knex
-        .select("*")
-        .from("Meal")
-        .orderBy(sortKeyApi, sortDirApi);
-
-      return res.send(sortedMeals);
-    } else {
-      const sortedMeals = await knex
-        .select("*")
-        .from("Meal")
-        .orderBy(sortKeyApi, "ASC");
-
-      return res.send(sortedMeals);
-    }
-  }
-
-  if (
-    !availableReservationsApi ||
-    !titleApi ||
-    !dateAfterApi ||
-    !dateBeforeApi ||
-    !limitApi ||
-    !sortKeyApi
-  ) {
-    if (limitApi) {
-      const limitedMeals = await knex("Meal")
-        .select("*")
-        .orderBy("ID", "ASC")
-        .limit(parseInt(limitApi));
-
-      return res.send(limitedMeals);
-    } else {
-      return res.send(allMeals);
-    }
+    // Execute the query
+    const meals = await query;
+    res.send(meals);
+  } catch (error) {
+    console.error("Error fetching meals:", error);
+    res.status(500).send({ error: "An error occurred while fetching meals" });
   }
 });
 
